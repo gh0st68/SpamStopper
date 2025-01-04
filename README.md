@@ -20,17 +20,16 @@ To use Spam Stopper Bot, follow these steps:
    ```bash
    git clone https://github.com/gh0st68/SpamStopper.git
 Navigate to the project directory:
-bash
-Copy code
+
+
 cd SpamStopperBot
 Install the required dependencies:
-bash
-Copy code
+
+
 pip install irc jaraco.stream
 Configure the bot by editing the SpamStopperBot.py file with your IRC server and authentication details.
 Run the bot:
-bash
-Copy code
+
 python SpamStopperBot.py
 Configuration
 All configuration variables are located at the top of the SpamStopperBot.py file. Below are some key settings:
