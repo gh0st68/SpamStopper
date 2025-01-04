@@ -84,8 +84,8 @@
         <ul>
             <li>Automatic NickServ and Operserv authentication.</li>
             <li>Spam detection using customizable regex patterns.</li>
-            <li>Ability to handle spam in both public and private messages.</li>
-            <li>Support for multiple akill types, including custom commands.</li>
+            <li>Handles spam in both public and private messages.</li>
+            <li>Supports multiple akill types, including custom commands.</li>
             <li>Robust logging for monitoring and debugging.</li>
             <li>Graceful reconnection handling.</li>
             <li>Easy-to-configure settings for server, credentials, and behavior.</li>
