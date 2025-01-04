@@ -18,7 +18,7 @@ To use Spam Stopper Bot, follow these steps:
 
 1. Clone the repository to your local machine:
    ```bash
-   git clone https://github.com/yourusername/SpamStopperBot.git
+   git clone https://github.com/gh0st68/SpamStopper.git
 Navigate to the project directory:
 bash
 Copy code
