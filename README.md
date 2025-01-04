@@ -1,5 +1,5 @@
 
-# GhostBot SpamStopper
+# IRC SpamStopper
 
 ![GhostBot Logo](https://raw.githubusercontent.com/gh0st68/web/main/TwistedNETLogo3.png)
 
