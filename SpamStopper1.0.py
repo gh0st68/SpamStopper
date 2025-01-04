@@ -7,6 +7,7 @@ import time
 import re
 import unicodedata
 import logging
+import traceback
 from jaraco.stream import buffer
 
 # ============================
@@ -16,16 +17,16 @@ from jaraco.stream import buffer
 # ----------------------------
 # IRC Server Configuration
 # ----------------------------
-IRC_SERVER = "irc.twistednet.org"       # IRC server address
-IRC_PORT = 6697                         # IRC server port (typically 6697 for SSL)
-CHANNEL = "#dev"                        # Channel to join
-BOT_NICKNAME = "GhostBot"               # Bot's nickname in the channel
-SERVICE_NICKNAME = "GhostBotServ"       # Bot's nickname used for service identification
+IRC_SERVER = "irc.twistednet.org"  # IRC server address
+IRC_PORT = 6697  # IRC server port (typically 6697 for SSL)
+CHANNELS = ["#twisssted", "#channel1", "#channel2"]  # List of channels to join
+BOT_NICKNAME = "GhostBot"  # Bot's nickname in the channel
+SERVICE_NICKNAME = "GhostBotServ"  # Bot's nickname used for service identification
 
 # ----------------------------
 # NickServ Configuration
 # ----------------------------
-NICKSERV_NICK = "NickServ"              # NickServ service nickname
+NICKSERV_NICK = "NickServ"  # NickServ service nickname
 NICKSERV_PASSWORD = "your_nickserv_password"  # NickServ password for the bot's nickname
 
 # Define the NickServ authentication command template
@@ -35,7 +36,7 @@ NICKSERV_AUTH_COMMAND_TEMPLATE = "IDENTIFY {password}"
 # ----------------------------
 # Operserv Configuration
 # ----------------------------
-OPERSERV_NICK = "Operserv"               # Operserv service nickname
+OPERSERV_NICK = "Operserv"  # Operserv service nickname
 OPERSERV_LOGIN = "your_operserv_login"  # Operserv login name
 OPERSERV_PASSWORD = "your_operserv_password"  # Operserv password
 
@@ -50,15 +51,15 @@ OPERSERV_AUTH_COMMAND_TEMPLATE = "LOGIN {login} {password}"
 # List of regex patterns to detect spam messages
 # Add or modify patterns as needed
 SPAM_KEYWORDS = [
-    r'irc\.ircnow\w*\.org',              # Matches irc.ircnow.org, irc.ircnow1.org, etc.
-    r'#SUPERBOWL\W*',                     # Matches #SUPERBOWL followed by non-word characters
-    r'#SUPER\W*',                         # Matches #SUPER followed by non-word characters
-    r'sodomite',                          # Matches the word 'sodomite'
-    r'LA\s*ST\s*WARNING',                 # Matches variations like "LAST WARNING", "LA ST WARNING"
-    r'LAST\?WARNING',                     # Matches 'LAST?WARNING'
-    r'SUPERNET',                          # Matches 'SUPERNET'
-    r'irc\.luatic\.net',                  # Matches 'irc.luatic.net'
-    r'irc\.supernets\.org'                # Matches 'irc.supernets.org'
+    r'irc\.ircnow\w*\.org',  # Matches irc.ircnow.org, irc.ircnow1.org, etc.
+    r'#SUPERBOWL\W*',  # Matches #SUPERBOWL followed by non-word characters
+    r'#SUPER\W*',  # Matches #SUPER followed by non-word characters
+    r'sodomite',  # Matches the word 'sodomite'
+    r'LA\s*ST\s*WARNING',  # Matches variations like "LAST WARNING", "LA ST WARNING"
+    r'LAST\?WARNING',  # Matches 'LAST?WARNING'
+    r'SUPERNET',  # Matches 'SUPERNET'
+    r'irc\.luatic\.net',  # Matches 'irc.luatic.net'
+    r'irc\.supernets\.org'  # Matches 'irc.supernets.org'
     # Add more patterns as needed
 ]
 
@@ -101,7 +102,7 @@ RECONNECT_DELAY = 60  # Seconds to wait before attempting to reconnect
 # ============================
 # Configure logging to log to both console and a file named 'ghostbot.log'
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,  # Set to DEBUG for detailed logs
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler("ghostbot.log"),
@@ -109,16 +110,21 @@ logging.basicConfig(
     ]
 )
 
+
 # ============================
 # GhostBot Class Definition
 # ============================
 
 class GhostBot(irc.bot.SingleServerIRCBot):
-    def __init__(self, channel, nickname, service_nick, server, port=6697):
+    def __init__(self, channels, nickname, service_nick, server, port=6697):
+        # Ensure channels is a list
+        if not isinstance(channels, list):
+            raise ValueError("channels must be a list of channel names.")
+
         irc.client.ServerConnection.buffer_class = buffer.LenientDecodingLineBuffer
         factory = irc.connection.Factory(wrapper=ssl.wrap_socket)
         super().__init__([(server, port)], nickname, nickname, connect_factory=factory)
-        self.channel = channel
+        self.channel_list = channels  # Renamed from self.channels
         self.service_nick = service_nick
         self.spam_patterns = [re.compile(pattern, re.IGNORECASE | re.UNICODE) for pattern in SPAM_KEYWORDS]
         self.authenticated_nickserv = False
@@ -130,8 +136,10 @@ class GhostBot(irc.bot.SingleServerIRCBot):
         c.nick(new_nick)
 
     def on_welcome(self, c, e):
-        logging.info(f"Connected to {IRC_SERVER}. Joining channel {self.channel}")
-        c.join(self.channel)
+        logging.info(f"Connected to {IRC_SERVER}. Joining channels: {', '.join(self.channel_list)}")
+        for channel in self.channel_list:
+            c.join(channel)
+            logging.info(f"Joined channel: {channel}")
         self.authenticate_nickserv(c)
         self.authenticate_operserv(c)
 
@@ -161,17 +169,19 @@ class GhostBot(irc.bot.SingleServerIRCBot):
 
     def on_pubmsg(self, c, e):
         """
-        Called when a public message is received in the channel.
+        Called when a public message is received in any of the joined channels.
         """
         message = e.arguments[0]
-        logging.info(f"Public message received from {e.source}: {message}")
+        source_channel = e.target  # The channel where the message was sent
+        sender = irc.client.NickMask(e.source).nick
+        logging.info(f"Public message received in {source_channel} from {sender}: {message}")
         # Normalize the message to NFKC to handle Unicode variations
         normalized_message = unicodedata.normalize('NFKC', message)
         # Check each spam pattern
         for pattern in self.spam_patterns:
             if pattern.search(normalized_message):
-                logging.info(f"Spam detected in public message: {message}")
-                self.handle_spam(c, e)
+                logging.info(f"Spam detected in public message in {source_channel} from {sender}: {message}")
+                self.handle_spam(c, e, channel=source_channel)
                 break  # No need to check other patterns
 
     def on_privmsg(self, c, e):
@@ -190,10 +200,11 @@ class GhostBot(irc.bot.SingleServerIRCBot):
                 self.handle_spam(c, e, private=True)
                 break  # No need to check other patterns
 
-    def handle_spam(self, connection, event, private=False):
+    def handle_spam(self, connection, event, private=False, channel=None):
         """
         Handles the spam by sending an akill command to Operserv based on the configured akill type.
         If private=True, the message was received as a private message.
+        The 'channel' parameter specifies the channel where the spam was detected (if applicable).
         """
         if not AKILL_ENABLED:
             logging.info("Akill functionality is disabled. Skipping akill action.")
@@ -206,6 +217,10 @@ class GhostBot(irc.bot.SingleServerIRCBot):
             ip = self.extract_ip(hostmask)
             reason = "Spamming detected: Use of prohibited keywords."
             duration = "0"  # Default duration; can be customized or made configurable
+
+            # Debugging logs
+            logging.debug(f"AKILL_COMMAND_TEMPLATES type: {type(AKILL_COMMAND_TEMPLATES)}")
+            logging.debug(f"AKILL_TYPE: {AKILL_TYPE}")
 
             # Select the appropriate akill command template
             if AKILL_TYPE in AKILL_COMMAND_TEMPLATES:
@@ -232,13 +247,18 @@ class GhostBot(irc.bot.SingleServerIRCBot):
             # Send the akill command to Operserv
             connection.privmsg(OPERSERV_NICK, akill_command)
             # Optionally, notify the channel or sender
-            if not private:
-                connection.privmsg(self.channel, f"{user} has been removed for spamming.")
+            if not private and channel:
+                connection.privmsg(channel, f"{user} has been removed for spamming.")
+            elif not private:
+                # If channel is not specified, notify all channels
+                for ch in self.channel_list:
+                    connection.privmsg(ch, f"{user} has been removed for spamming.")
             else:
                 # Optionally, notify the sender privately (if appropriate)
                 pass  # You can implement private notifications if desired
         except Exception as ex:
             logging.error(f"Failed to handle spam for user {user}: {ex}")
+            logging.error(traceback.format_exc())
 
     def extract_ip(self, hostmask):
         """
@@ -270,8 +290,10 @@ class GhostBot(irc.bot.SingleServerIRCBot):
             self.start()
         except Exception as ex:
             logging.error(f"Reconnection failed: {ex}. Retrying in {RECONNECT_DELAY} seconds...")
+            logging.error(traceback.format_exc())
             time.sleep(RECONNECT_DELAY)
             self.reconnect()
+
 
 # ============================
 # Main Function
@@ -279,14 +301,16 @@ class GhostBot(irc.bot.SingleServerIRCBot):
 
 def main():
     # Initialize and start the bot
-    bot = GhostBot(CHANNEL, BOT_NICKNAME, SERVICE_NICKNAME, IRC_SERVER, IRC_PORT)
     try:
+        bot = GhostBot(CHANNELS, BOT_NICKNAME, SERVICE_NICKNAME, IRC_SERVER, IRC_PORT)
         logging.info("Starting GhostBot...")
         bot.start()
     except KeyboardInterrupt:
         logging.info("Bot shutting down gracefully.")
     except Exception as ex:
         logging.error(f"An error occurred: {ex}")
+        logging.error(traceback.format_exc())
+
 
 # ============================
 # Entry Point
@@ -294,3 +318,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
