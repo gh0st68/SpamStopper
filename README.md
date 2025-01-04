@@ -26,7 +26,7 @@ cd SpamStopperBot
 Install the required dependencies:
 
 
-pip install irc jaraco.stream
+pip3 install irc jaraco.stream
 Configure the bot by editing the SpamStopperBot.py file with your IRC server and authentication details.
 Run the bot:
 
