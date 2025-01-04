@@ -3,6 +3,8 @@
 
 ![GhostBot Logo](https://raw.githubusercontent.com/gh0st68/web/main/TwistedNETLogo3.png)
 
+<sub>*Note: The logo has been resized for better compatibility.*</sub>
+
 ## Overview
 
 **GhostBot SpamStopper** is a robust and configurable IRC bot designed to monitor and prevent spam on IRC channels. Equipped with advanced detection patterns, automated responses, and powerful IRC service integration (NickServ and Operserv), GhostBot ensures a safe and spam-free environment for your IRC networks.
@@ -27,7 +29,7 @@
 - Python 3.8+
 - Required Python Libraries:
   ```bash
-  pip install irc python-jaraco
+  pip3 install irc python-jaraco
   ```
 
 ### Installation
