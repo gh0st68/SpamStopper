@@ -46,7 +46,7 @@
 
 3. Run the bot:
    ```bash
-   python3 SpamStopper1.0.py
+   python3 SpamStopper1.0.py &
    ```
 
 ---
