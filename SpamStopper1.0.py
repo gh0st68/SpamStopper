@@ -1,5 +1,6 @@
 #Spam Stopper 1.0 - by gh0st - irc.twistednet.org #dev #twisted
 
+
 import ssl
 import irc.bot
 import irc.connection
@@ -19,7 +20,7 @@ from jaraco.stream import buffer
 # ----------------------------
 IRC_SERVER = "irc.twistednet.org"  # IRC server address
 IRC_PORT = 6697  # IRC server port (typically 6697 for SSL)
-CHANNELS = ["#twisssted", "#channel1", "#channel2"]  # List of channels to join
+CHANNELS = ["#g6", "#channel1", "#channel2"]  # List of channels to join
 BOT_NICKNAME = "GhostBot"  # Bot's nickname in the channel
 SERVICE_NICKNAME = "GhostBotServ"  # Bot's nickname used for service identification
 
@@ -110,7 +111,6 @@ logging.basicConfig(
     ]
 )
 
-
 # ============================
 # GhostBot Class Definition
 # ============================
@@ -121,8 +121,15 @@ class GhostBot(irc.bot.SingleServerIRCBot):
         if not isinstance(channels, list):
             raise ValueError("channels must be a list of channel names.")
 
+        # Create an SSL context that disables host checking and cert verification
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+
         irc.client.ServerConnection.buffer_class = buffer.LenientDecodingLineBuffer
-        factory = irc.connection.Factory(wrapper=ssl.wrap_socket)
+        # Wrap the socket using our custom SSL context
+        factory = irc.connection.Factory(wrapper=lambda sock: context.wrap_socket(sock, server_hostname=server))
+
         super().__init__([(server, port)], nickname, nickname, connect_factory=factory)
         self.channel_list = channels  # Renamed from self.channels
         self.service_nick = service_nick
@@ -254,8 +261,8 @@ class GhostBot(irc.bot.SingleServerIRCBot):
                 for ch in self.channel_list:
                     connection.privmsg(ch, f"{user} has been removed for spamming.")
             else:
-                # Optionally, notify the sender privately (if appropriate)
-                pass  # You can implement private notifications if desired
+                # Optionally, notify the sender privately (if desired)
+                pass
         except Exception as ex:
             logging.error(f"Failed to handle spam for user {user}: {ex}")
             logging.error(traceback.format_exc())
@@ -318,4 +325,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
