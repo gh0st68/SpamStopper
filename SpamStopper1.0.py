@@ -1,8 +1,6 @@
 #Spam Stopper 1.0 - by gh0st - irc.twistednet.org #dev #twisted
 
-# ============================
-# Updated GhostBot Code
-# ============================
+
 import ssl
 import irc.bot
 import irc.connection
