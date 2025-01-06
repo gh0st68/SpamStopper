@@ -1,6 +1,5 @@
 #Spam Stopper 1.0 - by gh0st - irc.twistednet.org #dev #twisted
 
-
 import ssl
 import irc.bot
 import irc.connection
@@ -39,7 +38,7 @@ NICKSERV_AUTH_COMMAND_TEMPLATE = "IDENTIFY {password}"
 # ----------------------------
 # These credentials are used to issue the "/oper" command on connect.
 IRC_OPER_USERNAME = "gh0st"
-IRC_OPER_PASSWORD = "changeme"
+IRC_OPER_PASSWORD = "CHANGEME"
 
 # ----------------------------
 # Spam Detection Configuration
@@ -116,10 +115,19 @@ class GhostBot(irc.bot.SingleServerIRCBot):
         if not isinstance(channels, list):
             raise ValueError("channels must be a list of channel names.")
 
+        # Use a modern approach to SSL:
+        ssl_context = ssl.create_default_context()
+        # Accept self-signed certs (NOT recommended for production):
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+
+        # Use context.wrap_socket:
         irc.client.ServerConnection.buffer_class = buffer.LenientDecodingLineBuffer
-        factory = irc.connection.Factory(wrapper=ssl.wrap_socket)
+        factory = irc.connection.Factory(wrapper=ssl_context.wrap_socket)
+
         super().__init__([(server, port)], nickname, nickname, connect_factory=factory)
-        self.channel_list = channels  # Renamed from self.channels
+
+        self.channel_list = channels
         self.service_nick = service_nick
         self.spam_patterns = [re.compile(pattern, re.IGNORECASE | re.UNICODE) for pattern in SPAM_KEYWORDS]
         self.authenticated_nickserv = False
@@ -310,4 +318,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
