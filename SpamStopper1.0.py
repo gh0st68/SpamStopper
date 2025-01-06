@@ -1,5 +1,8 @@
 #Spam Stopper 1.0 - by gh0st - irc.twistednet.org #dev #twisted
 
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import ssl
 import irc.bot
 import irc.connection
@@ -38,7 +41,7 @@ NICKSERV_AUTH_COMMAND_TEMPLATE = "IDENTIFY {password}"
 # ----------------------------
 # These credentials are used to issue the "/oper" command on connect.
 IRC_OPER_USERNAME = "gh0st"
-IRC_OPER_PASSWORD = "CHANGEME"
+IRC_OPER_PASSWORD = "changeme"
 
 # ----------------------------
 # Spam Detection Configuration
@@ -65,25 +68,27 @@ AKILL_ENABLED = True  # Set to False to disable akill functionality
 
 # Define supported akill types
 # Options:
-# - "operserv_akill_nick": /msg Operserv AKILL add <nick> <reason>
-# - "operserv_gline_ip": /msg Operserv GLINE add <ip> <duration> <reason>
-# - "operserv_zline_ip": /msg Operserv ZLINE add <ip> <duration> <reason>
-# - "operserv_block_nick": /msg Operserv BLOCK add <nick> <reason>
-# - "operserv_kill_nick": /msg Operserv KILL add <nick> <reason>
+# - "operserv_akill_nick": AKILL add <nick> <reason>
+# - "operserv_gline_ip": GLINE add <ip> <duration> <reason>
+# - "operserv_zline_ip": ZLINE add <ip> <duration> <reason>
+# - "operserv_block_nick": BLOCK add <nick> <reason>
+# - "operserv_kill_nick": KILL add <nick> <reason>
 # - "custom": User-defined command
 AKILL_TYPE = "operserv_akill_nick"  # Change as needed
 
 # Custom akill command template (used only if AKILL_TYPE is set to "custom")
 # Use placeholders {nick}, {ip}, {duration}, {reason} as needed
-AKILL_CUSTOM_COMMAND = "/msg Operserv akill add {nick} {reason}"  # Example: "/msg Operserv custom_command {nick} {reason}"
+# Removed "/msg Operserv" here as well, so we only send the actual command to Operserv.
+AKILL_CUSTOM_COMMAND = "akill add {nick} {reason}"
 
 # Define akill command templates for supported types
+# (Removed the literal "/msg {operserv_nick}" prefix so that OperServ sees valid commands.)
 AKILL_COMMAND_TEMPLATES = {
-    "operserv_akill_nick": "/msg {operserv_nick} AKILL add {nick} {reason}",
-    "operserv_gline_ip": "/msg {operserv_nick} GLINE add {ip} {duration} {reason}",
-    "operserv_zline_ip": "/msg {operserv_nick} ZLINE add {ip} {duration} {reason}",
-    "operserv_block_nick": "/msg {operserv_nick} BLOCK add {nick} {reason}",
-    "operserv_kill_nick": "/msg {operserv_nick} KILL add {nick} {reason}",
+    "operserv_akill_nick": "AKILL add {nick} {reason}",
+    "operserv_gline_ip": "GLINE add {ip} {duration} {reason}",
+    "operserv_zline_ip": "ZLINE add {ip} {duration} {reason}",
+    "operserv_block_nick": "BLOCK add {nick} {reason}",
+    "operserv_kill_nick": "KILL add {nick} {reason}",
     "custom": AKILL_CUSTOM_COMMAND  # User-defined
 }
 
@@ -234,7 +239,7 @@ class GhostBot(irc.bot.SingleServerIRCBot):
                     )
                 else:
                     akill_command = AKILL_COMMAND_TEMPLATES[AKILL_TYPE].format(
-                        operserv_nick="Operserv",  # Keep using "Operserv" in the command
+                        operserv_nick="Operserv",  # Inserted into the string as needed
                         nick=user,
                         ip=ip,
                         duration=duration,
@@ -245,7 +250,7 @@ class GhostBot(irc.bot.SingleServerIRCBot):
                 return
 
             logging.info(f"Sending akill command: {akill_command}")
-            # Send the akill command to Operserv
+            # Send the command to OperServ (no "/msg" prefix here)
             connection.privmsg("Operserv", akill_command)
 
             # Optionally, notify the channel or sender
@@ -318,3 +323,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
