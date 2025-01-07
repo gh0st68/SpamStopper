@@ -51,6 +51,7 @@ SPAM_KEYWORDS = [
     r'LA\s*ST\s*WARNING',
     r'LAST\?WARNING',
     r'SUPERNET',
+    r'ꜱᴜᴘᴇʀɴᴇᴛꜱ',
     r'irc\.luatic\.net',
     r'irc\.supernets\.org',
     r'\s*\.\'\'\.\s*\n\s*.*\s*\*\*.*:_\\/_:\s*\n\s*:.*:_\\/_:.*:\s*'
