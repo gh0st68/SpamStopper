@@ -187,7 +187,7 @@ To run the bot in a detached screen session, follow these steps:
 
 4. Start the bot:
    ```bash
-   python3 SpamStopper1.0.py
+   python3 SpamStopper2.0.py
    ```
 
 5. To detach from the screen session and leave the bot running in the background, press:
