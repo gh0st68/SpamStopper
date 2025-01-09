@@ -1,8 +1,10 @@
 
 # IRC SpamStopper
 
-![GhostBot Logo](https://raw.githubusercontent.com/gh0st68/web/main/TwistedNETLogo3.png)
+**For support and help, or just to visit, come to** [irc.twistednet.org](irc://irc.twistednet.org) **channels #dev and #twisted**  
+**SpamBot made by gh0st**  
 
+![GhostBot Logo](https://raw.githubusercontent.com/gh0st68/web/main/TwistedNETLogo3.png)
 
 ## Overview
 
@@ -16,6 +18,7 @@
 - **Automated Actions**: Use Operserv to execute actions like AKILL, GLINE, ZLINE, and more.
 - **NickServ Authentication**: Secure bot nickname with NickServ.
 - **Configurable Channels**: Join multiple channels and monitor them simultaneously.
+- **Reputation System**: Keep track of users' reputation to determine their trustworthiness.
 - **Reconnection Support**: Automatically reconnects after a disconnection.
 - **Logging**: Comprehensive logging for monitoring and debugging.
 
@@ -90,7 +93,44 @@ AKILL_TYPE = "operserv_akill_nick"  # Options: "operserv_gline_ip", "operserv_zl
 - **Spam Detection**: Detect and handle spam messages in real-time.
 - **NickServ Authentication**: Automatically authenticates using a secure password.
 - **Operserv Integration**: Executes preconfigured actions on detected spammers.
+- **Reputation System**: Track user reputation and manage whitelist functionality.
 - **Reconnection**: Recovers gracefully from disconnections.
+
+---
+
+## Running the Bot in a Screen Session
+
+To run the bot in a detached screen session, follow these steps:
+
+1. Install `screen` if it's not already installed:
+   ```bash
+   sudo apt install screen  # For Ubuntu/Debian
+   ```
+
+2. Start a new screen session:
+   ```bash
+   screen -S ghostbot
+   ```
+
+3. Inside the screen session, navigate to the bot's directory:
+   ```bash
+   cd SpamStopper
+   ```
+
+4. Start the bot:
+   ```bash
+   python3 SpamStopper1.0.py
+   ```
+
+5. To detach from the screen session and leave the bot running in the background, press:
+   ```bash
+   Ctrl + A, then D
+   ```
+
+6. To reattach to the screen session later, run:
+   ```bash
+   screen -r ghostbot
+   ```
 
 ---
 
@@ -132,5 +172,3 @@ For support or inquiries:
 - Visit us on IRC at **irc.twistednet.org**.
 - Join channels **#dev** and **#twisted** for help.
 - Created and maintained by **gh0st**.
-
----
