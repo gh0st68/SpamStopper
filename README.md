@@ -88,6 +88,69 @@ AKILL_TYPE = "operserv_akill_nick"  # Options: "operserv_gline_ip", "operserv_zl
 
 ---
 
+## Options: AKILL, KLINE, GLINE, ZLINE
+
+GhostBot offers several ways to take action against spammers:
+
+### 1. **AKILL** (Account Kill)
+- **Description**: This action involves banning a user from the network based on their nickname. It effectively prevents the user from reconnecting to any IRC server in the network using the same nickname. This is often used for persistent spammers who need to be permanently banned across the entire network.
+- **Configuration**:
+    ```python
+    AKILL_ENABLED = True  # Enable AKILL functionality
+    AKILL_TYPE = "operserv_akill_nick"  # Can be "operserv_akill_nick", or custom commands
+    ```
+- **Action**: AKILL can be configured to run automatically when spam is detected. It is sent to Operserv, which will apply the ban.
+
+### 2. **KLINE** (Kill Line)
+- **Description**: This action prevents a user from connecting to an IRC server based on their hostmask (hostname/IP). It is a local server ban and is typically used to block spammers from a specific server. Unlike AKILL, KLINE is limited to the server it's issued on.
+- **Configuration**:
+    ```python
+    KLINE_ENABLED = True  # Enable KLINE functionality
+    ```
+- **Action**: When spam is detected, KLINE can be automatically triggered to block a specific IP or hostmask.
+
+### 3. **GLINE** (Global Line)
+- **Description**: GLINE is similar to KLINE but operates network-wide. This action is used to prevent users from connecting to any server in the network based on their IP address or hostmask.
+- **Configuration**:
+    ```python
+    GLINE_ENABLED = True  # Enable GLINE functionality
+    ```
+- **Action**: GLINE is triggered when spam is detected, blocking the user’s IP globally across the network.
+
+### 4. **ZLINE** (Z-Line)
+- **Description**: ZLINE is a network-wide ban based on the user’s IP address. This action is more permanent than GLINE and is typically used for blocking large numbers of users or entire subnets.
+- **Configuration**:
+    ```python
+    ZLINE_ENABLED = True  # Enable ZLINE functionality
+    ```
+- **Action**: When spam is detected, ZLINE can be triggered to block a user’s IP address across the entire network.
+
+These actions can be selectively enabled or disabled, depending on your needs. You can also configure the bot to take multiple actions simultaneously, providing layered protection against spammers.
+
+---
+
+## Reputation System
+
+### Overview
+The **Reputation System** is designed to help the bot distinguish between malicious users and trusted ones. Users with a high reputation are less likely to be removed for spamming, and they may be whitelisted if needed. This system helps to prevent false positives and ensures that trusted users are not wrongfully penalized.
+
+### Key Features
+- **Reputation Score**: Each user has a reputation score that starts at 0. The score increases each time they participate in the network, especially when they trigger actions like spam detection.
+- **Threshold for Trust**: Users with a reputation score above the **Reputation Threshold** are trusted and will not be affected by spam-related actions (e.g., AKILL, KLINE).
+- **Whitelisting**: Users can be manually added to the whitelist, which exempts them from any spam checks or actions.
+
+### How It Works
+- The bot tracks users’ reputation over time by monitoring their activity and spam triggers. If a user accumulates enough positive reputation, they are considered trusted and will be exempt from automatic actions like AKILL or KLINE, regardless of their behavior.
+- The **Reputation Threshold** is configurable, and once a user's reputation exceeds this threshold, the bot will no longer automatically remove them for spamming.
+
+### Configuration
+```python
+DB_FILE = "ghostbot_reputation.db"  # SQLite database file for storing reputation data
+REPUTATION_THRESHOLD = 5  # Users with reputation equal to or above this threshold are trusted and exempt from removal
+```
+
+---
+
 ## Commands and Functionality
 
 GhostBot comes with several commands that can be used in your channels to manage spam and user reputation:
