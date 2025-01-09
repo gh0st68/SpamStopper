@@ -35,7 +35,7 @@ NICKSERV_AUTH_COMMAND_TEMPLATE = "IDENTIFY {password}"  # Template for NickServ 
 # ----------------------------
 # IRC Oper Configuration
 # ----------------------------
-IRC_OPER_USERNAME = "HACKTEHPLANET"  # IRC operator username
+IRC_OPER_USERNAME = "HAXTEHPLANET"  # IRC operator username
 IRC_OPER_PASSWORD = "CHANGEME"  # IRC operator password
 
 # ----------------------------
@@ -61,13 +61,17 @@ SPAM_KEYWORDS = [
 ]
 
 # ----------------------------
-# Akill / Kill Configuration
+# Akill / Kill / Ban Configuration
 # ----------------------------
-AKILL_ENABLED = False  # Set to False to disable akill functionality
-KILL_ENABLED = True  # Set to True to enable raw server KILL commands
+AKILL_ENABLED = False  # Set to False to disable AKILL functionality
+KILL_ENABLED = False # Set to True to enable raw server KILL commands
 
-AKILL_TYPE = "operserv_akill_nick"  # Type of akill to perform (e.g., "operserv_akill_nick")
-AKILL_CUSTOM_COMMAND = "akill add {nick} {reason}"  # Custom akill command template
+GLINE_ENABLED = False  # Set to False to disable GLINE functionality
+KLINE_ENABLED = False # Set to False to disable KLINE functionality
+ZLINE_ENABLED = True  # Set to False to disable ZLINE functionality
+
+AKILL_TYPE = "operserv_akill_nick"  # Type of AKILL to perform (e.g., "operserv_akill_nick")
+AKILL_CUSTOM_COMMAND = "akill add {nick} {reason}"  # Custom AKILL command template
 
 AKILL_COMMAND_TEMPLATES = {
     "operserv_akill_nick": "AKILL add {nick} {reason}",
@@ -315,8 +319,8 @@ class GhostBot(irc.bot.SingleServerIRCBot):
             "timestamp": timestamp_str
         })
 
-        if not AKILL_ENABLED and not KILL_ENABLED:
-            logging.info("Akill and Kill are disabled. No action taken.")
+        if not AKILL_ENABLED and not KILL_ENABLED and not GLINE_ENABLED and not KLINE_ENABLED and not ZLINE_ENABLED:
+            logging.info("Akill, Kill, Gline, Kline, and Zline are all disabled. No action taken.")
             return
 
         try:
@@ -348,6 +352,21 @@ class GhostBot(irc.bot.SingleServerIRCBot):
                 kill_command = f"KILL {user} {reason}"
                 logging.info(f"Sending kill command: {kill_command}")
                 connection.send_raw(kill_command)
+
+            if GLINE_ENABLED:
+                gline_command = f"GLINE {user} {duration} {reason}"
+                logging.info(f"Sending gline command: {gline_command}")
+                connection.send_raw(gline_command)
+
+            if KLINE_ENABLED:
+                kline_command = f"KLINE {user} {duration} {reason}"
+                logging.info(f"Sending kline command: {kline_command}")
+                connection.send_raw(kline_command)
+
+            if ZLINE_ENABLED:
+                zline_command = f"ZLINE {user} {duration} {reason}"
+                logging.info(f"Sending zline command: {zline_command}")
+                connection.send_raw(zline_command)
 
             removal_msg = f"\x034{user}\x03 has been \x02removed\x02 for spamming."
             if not private and channel:
