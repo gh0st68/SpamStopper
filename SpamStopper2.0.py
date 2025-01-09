@@ -42,43 +42,45 @@ IRC_OPER_PASSWORD = "CHANGEME"  # IRC operator password
 # Spam Detection Configuration
 # ----------------------------
 SPAM_KEYWORDS = [
-    r'irc\.ircnow\w*\.org',  # Matches irc.ircnow.org, irc.ircnow1.org, etc.
-    r'#SUPERBOWL\W*',  # Matches #SUPERBOWL followed by non-word characters
-    r'#SUPER\W*',  # Matches #SUPER followed by non-word characters
-    r'sodomite',  # Matches the word 'sodomite'
-    r'LA\s*ST\s*WARNING',  # Matches variations like "LAST WARNING", "LA ST WARNING"
-    r'LAST\?WARNING',  # Matches 'LAST?WARNING'
-    r'SUPERNET',  # Matches 'SUPERNET'
-    r'irc\.luatic\.net',  # Matches 'irc.luatic.net'
-    r'irc\.supernets\.org',  # Matches 'irc.supernets.org'
-    r'(?<!\S)\.\'\'\.(?!\S)',  # Matches standalone .''.
-    r'[\x80-\xff]{3,}',  # Matches sequences of non-ASCII characters (3 or more)
-    r'(\W){4,}',  # Matches 4 or more consecutive non-word characters
-    r'\b0x[a-fA-F0-9]+\b',  # Matches hexadecimal text (e.g., 0xAA0)
-    r'[^\x20-\x7E]{3,}',  # Matches non-printable ASCII characters (3 or more)
-    r'(.)\1{6,}',  # Matches any character repeated 6 or more times
-    r'(\s*[^a-zA-Z0-9\s]+){4,}'  # Matches sequences of special characters (4 or more)
+    r'irc\.ircnow\w*\.org',
+    r'#SUPERBOWL\W*',
+    r'#SUPER\W*',
+    r'sodomite',
+    r'LA\s*ST\s*WARNING',
+    r'LAST\?WARNING',
+    r'SUPERNET',
+    r'irc\.luatic\.net',
+    r'irc\.supernets\.org',
+    r'(?<!\S)\.\'\'\.(?!\S)',
+    r'[\x80-\xff]{3,}',
+    r'(\W){4,}',
+    r'\b0x[a-fA-F0-9]+\b',
+    r'[^\x20-\x7E]{3,}',
+    r'(.)\1{6,}',
+    r'(\s*[^a-zA-Z0-9\s]+){4,}'
 ]
 
 # ----------------------------
 # Akill / Kill / Ban Configuration
 # ----------------------------
 AKILL_ENABLED = False  # Set to False to disable AKILL functionality
-KILL_ENABLED = False # Set to True to enable raw server KILL commands
+KILL_ENABLED = True   # Set to True to enable raw server KILL commands
 
 GLINE_ENABLED = False  # Set to False to disable GLINE functionality
-KLINE_ENABLED = False # Set to False to disable KLINE functionality
-ZLINE_ENABLED = True  # Set to False to disable ZLINE functionality
+KLINE_ENABLED = False  # Set to False to disable KLINE functionality
+ZLINE_ENABLED = False  # Set to False to disable ZLINE functionality
+
+BAN_KICK_ENABLED = False  # Set to True to enable banning and kicking users from channels
 
 AKILL_TYPE = "operserv_akill_nick"  # Type of AKILL to perform (e.g., "operserv_akill_nick")
 AKILL_CUSTOM_COMMAND = "akill add {nick} {reason}"  # Custom AKILL command template
 
 AKILL_COMMAND_TEMPLATES = {
     "operserv_akill_nick": "AKILL add {nick} {reason}",
-    "operserv_gline_ip":   "GLINE add {ip} {duration} {reason}",
-    "operserv_zline_ip":   "ZLINE add {ip} {duration} {reason}",
+    "operserv_gline_ip": "GLINE add {ip} {duration} {reason}",
+    "operserv_zline_ip": "ZLINE add {ip} {duration} {reason}",
     "operserv_block_nick": "BLOCK add {nick} {reason}",
-    "operserv_kill_nick":  "KILL add {nick} {reason}",
+    "operserv_kill_nick": "KILL add {nick} {reason}",
     "custom": AKILL_CUSTOM_COMMAND
 }
 
@@ -95,7 +97,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler("ghostbot.log"),  # Logs to a file
-        logging.StreamHandler()  # Logs to the console
+        logging.StreamHandler()               # Logs to the console
     ]
 )
 
@@ -103,7 +105,7 @@ logging.basicConfig(
 # Reputation System Configuration
 # ----------------------------
 DB_FILE = "ghostbot_reputation.db"  # SQLite database file for storing reputation data
-REPUTATION_THRESHOLD = 5  # Users with reputation equal to or above this threshold are trusted and exempt from removal
+REPUTATION_THRESHOLD = 5           # Users with reputation >= this threshold are trusted
 
 # ============================
 # Reputation System Functions
@@ -121,6 +123,7 @@ def init_db():
     conn.commit()
     conn.close()
 
+
 def get_reputation(nick):
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -135,6 +138,7 @@ def get_reputation(nick):
         conn.close()
         return row[0]
 
+
 def increment_reputation(nick, amount=1):
     current_score = get_reputation(nick)
     new_score = current_score + amount
@@ -146,8 +150,10 @@ def increment_reputation(nick, amount=1):
     conn.close()
     return new_score
 
+
 def is_trusted(nick):
     return get_reputation(nick) >= REPUTATION_THRESHOLD
+
 
 # ============================
 # GhostBot Class Definition
@@ -308,6 +314,13 @@ class GhostBot(irc.bot.SingleServerIRCBot):
             logging.info(f"Trusted user '{user}' triggered spam but is above threshold. Skipping removal.")
             return
 
+        # If BAN_KICK_ENABLED is True, ban and kick the user from the channel
+        if BAN_KICK_ENABLED and channel and not private:
+            self.channel_ban(connection, event, channel)
+        else:
+            logging.info(f"BAN_KICK_ENABLED is {BAN_KICK_ENABLED} or no channel. "
+                         f"No ban/kick action taken for {user}.")
+
         reason = "Spamming detected: Use of prohibited keywords."
         duration = "0"
 
@@ -319,7 +332,7 @@ class GhostBot(irc.bot.SingleServerIRCBot):
             "timestamp": timestamp_str
         })
 
-        if not AKILL_ENABLED and not KILL_ENABLED and not GLINE_ENABLED and not KLINE_ENABLED and not ZLINE_ENABLED:
+        if not any([AKILL_ENABLED, KILL_ENABLED, GLINE_ENABLED, KLINE_ENABLED, ZLINE_ENABLED]):
             logging.info("Akill, Kill, Gline, Kline, and Zline are all disabled. No action taken.")
             return
 
@@ -388,6 +401,29 @@ class GhostBot(irc.bot.SingleServerIRCBot):
             logging.warning(f"Could not extract IP from hostmask: {hostmask}. Using hostmask instead.")
             return hostmask
 
+    def channel_ban(self, connection, event, channel):
+        """
+        Ban and (optionally) kick the user from the specified channel.
+        Uses the real host from the user's hostmask rather than the nick.
+        """
+        nickmask = irc.client.NickMask(event.source)
+        nick = nickmask.nick
+        user = nickmask.user
+        host = nickmask.host
+
+        # Create a standard banmask: *!user@host
+        banmask = f"*!{user}@{host}"
+
+        # Use two-argument form: channel + combined string
+        connection.mode(channel, f"+b {banmask}")
+        logging.info(f"Banned user {nick} from channel {channel}. Banmask: {banmask}")
+
+        if BAN_KICK_ENABLED:
+            connection.kick(channel, nick, "Banned for misconduct.")
+            logging.info(f"Kicked user {nick} from channel {channel}.")
+        else:
+            logging.info(f"Banning is enabled but kicking is disabled. User {nick} remains in channel {channel}.")
+
     def on_disconnect(self, c, e):
         logging.warning(f"Disconnected from server. Reconnecting in {RECONNECT_DELAY} seconds...")
         time.sleep(RECONNECT_DELAY)
@@ -404,6 +440,7 @@ class GhostBot(irc.bot.SingleServerIRCBot):
             time.sleep(RECONNECT_DELAY)
             self.reconnect()
 
+
 def main():
     try:
         init_db()
@@ -415,6 +452,7 @@ def main():
     except Exception as ex:
         logging.error(f"An error occurred: {ex}")
         logging.error(traceback.format_exc())
+
 
 if __name__ == "__main__":
     main()
