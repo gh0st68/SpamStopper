@@ -16,6 +16,7 @@
 
 - **Spam Detection**: Identify spam messages using customizable regex patterns.
 - **Automated Actions**: Use Operserv to execute actions like AKILL, GLINE, ZLINE, and more.
+- **Kick and Ban Functionality**: Automatically kick and ban spammers from channels if enabled.
 - **NickServ Authentication**: Secure bot nickname with NickServ.
 - **Configurable Channels**: Join multiple channels and monitor them simultaneously.
 - **Reputation System**: Keep track of users' reputation to determine their trustworthiness. Users with high reputation are trusted and exempt from removal.
