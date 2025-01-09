@@ -31,7 +31,7 @@
 - Python 3.8+
 - Required Python Libraries:
   ```bash
-  pip3 install irc jaraco
+  pip3 install irc 
   ```
 
 ### Installation
