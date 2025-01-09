@@ -31,7 +31,7 @@
 - Python 3.8+
 - Required Python Libraries:
   ```bash
-  pip3 install irc 
+  pip3 install irc jaraco
   ```
 
 ### Installation
@@ -90,9 +90,14 @@ AKILL_TYPE = "operserv_akill_nick"  # Options: "operserv_gline_ip", "operserv_zl
 
 ## Commands and Functionality
 
-- **Spam Detection**: Detect and handle spam messages in real-time.
+GhostBot comes with several commands that can be used in your channels to manage spam and user reputation:
+
+- **!white add <nick>**: Adds a user to the whitelist.
+- **!white remove <nick>**: Removes a user from the whitelist.
+- **!stats**: Displays the bot's kill statistics.
+- **Spam Detection**: Detects and handles spam messages in real-time.
 - **NickServ Authentication**: Automatically authenticates using a secure password.
-- **Operserv Integration**: Executes preconfigured actions on detected spammers.
+- **Operserv Integration**: Executes preconfigured actions (AKILL, GLINE, ZLINE) on detected spammers.
 - **Reputation System**: Track user reputation and manage whitelist functionality.
 - **Reconnection**: Recovers gracefully from disconnections.
 
