@@ -89,7 +89,20 @@ AKILL_TYPE = "operserv_akill_nick"  # Options: "operserv_gline_ip", "operserv_zl
 
 ---
 
-## Options: AKILL, KLINE, GLINE, ZLINE
+
+## Options: AKILL, KLINE, GLINE, ZLINE, Kick/Ban
+
+GhostBot offers several ways to take action against spammers:
+
+### 1. **Kick and Ban**
+- **Description**: Kick the spammer from the channel and apply a ban mask to prevent them from rejoining. This action is channel-specific and is only applied if `BAN_KICK_ENABLED` is set to `True`.
+- **Configuration**:
+    ```python
+    BAN_KICK_ENABLED = True  # Enable kick/ban functionality
+    ```
+- **Action**: When spam is detected, the bot automatically kicks the user and bans them from the channel with a ban mask based on their user and host details.
+
+    
 
 GhostBot offers several ways to take action against spammers:
 
