@@ -20,74 +20,68 @@ import sqlite3
 # IRC Server Configuration
 # ----------------------------
 IRC_SERVER = "prism.twistednet.org"  # The server to connect to
-IRC_PORT = 6697  # The port for SSL connection
-CHANNELS = ["#SDASD", "#dev", "#konnect-chat", "#valyria", "#ai", "#sadkjksdj"]  # List of channels the bot will join
-BOT_NICKNAME = "GhostBot"  # The bot's nickname
-SERVICE_NICKNAME = "GhostBotServ"  # The bot's service nickname
+IRC_PORT = 6697                     # The port for SSL connection
+CHANNELS = ["#SDASD", "#dev", "#konnect-chat", "#valyria", "#ai", "#sadkjksdj"]
+BOT_NICKNAME = "GhostBot"           # The bot's nickname
+SERVICE_NICKNAME = "GhostBotServ"   # The bot's service nickname
 
 # ----------------------------
 # NickServ Configuration
 # ----------------------------
-NICKSERV_NICK = "NickServ"  # The nickname of NickServ for authentication
-NICKSERV_PASSWORD = "your_nickserv_password"  # The password for NickServ authentication
-NICKSERV_AUTH_COMMAND_TEMPLATE = "IDENTIFY {password}"  # Template for NickServ authentication command
+NICKSERV_NICK = "NickServ"
+NICKSERV_PASSWORD = "your_nickserv_password"
+NICKSERV_AUTH_COMMAND_TEMPLATE = "IDENTIFY {password}"
 
 # ----------------------------
 # IRC Oper Configuration
 # ----------------------------
-IRC_OPER_USERNAME = "HAXTEHPLANET"  # IRC operator username
-IRC_OPER_PASSWORD = "CHANGEME"  # IRC operator password
+IRC_OPER_USERNAME = "haxtheplanet"
+IRC_OPER_PASSWORD = "changeme"
 
 # ----------------------------
 # Spam Detection Configuration
 # ----------------------------
 SPAM_KEYWORDS = [
-    r'irc\.ircnow\w*\.org',
-    r'#SUPERBOWL\W*',
-    r'#SUPER\W*',
-    r'sodomite',
-    r'LA\s*ST\s*WARNING',
-    r'LAST\?WARNING',
-    r'SUPERNET',
-    r'irc\.luatic\.net',
-    r'irc\.supernets\.org',
-    r'(?<!\S)\.\'\'\.(?!\S)',
-    r'[\x80-\xff]{3,}',
-    r'(\W){4,}',
-    r'\b0x[a-fA-F0-9]+\b',
-    r'[^\x20-\x7E]{3,}',
-    r'(.)\1{6,}',
-    r'(\s*[^a-zA-Z0-9\s]+){4,}'
+    r'irc\.ircnow\w*\.org',  # Matches irc.ircnow.org, irc.ircnow1.org, etc.
+    r'#SUPERBOWL\W*',        # Matches #SUPERBOWL followed by non-word characters
+    r'#SUPER\W*',            # Matches #SUPER followed by non-word characters
+    r'sodomite',             # Matches the word 'sodomite'
+    r'LA\s*ST\s*WARNING',    # Matches variations like "LAST WARNING", "LA ST WARNING"
+    r'LAST\?WARNING',        # Matches 'LAST?WARNING'
+    r'SUPERNET',             # Matches 'SUPERNET'
+    r'irc\.luatic\.net',     # Matches 'irc.luatic.net'
+    r'irc\.supernets\.org'   # Matches 'irc.supernets.org'
+    # Add more patterns as needed
 ]
 
 # ----------------------------
 # Akill / Kill / Ban Configuration
 # ----------------------------
-AKILL_ENABLED = False  # Set to False to disable AKILL functionality
-KILL_ENABLED = True   # Set to True to enable raw server KILL commands
+AKILL_ENABLED = False
+KILL_ENABLED = True
 
-GLINE_ENABLED = False  # Set to False to disable GLINE functionality
-KLINE_ENABLED = False  # Set to False to disable KLINE functionality
-ZLINE_ENABLED = False  # Set to False to disable ZLINE functionality
+GLINE_ENABLED = False
+KLINE_ENABLED = False
+ZLINE_ENABLED = False
 
-BAN_KICK_ENABLED = False  # Set to True to enable banning and kicking users from channels
+BAN_KICK_ENABLED = False
 
-AKILL_TYPE = "operserv_akill_nick"  # Type of AKILL to perform (e.g., "operserv_akill_nick")
-AKILL_CUSTOM_COMMAND = "akill add {nick} {reason}"  # Custom AKILL command template
+AKILL_TYPE = "operserv_akill_nick"
+AKILL_CUSTOM_COMMAND = "akill add {nick} {reason}"
 
 AKILL_COMMAND_TEMPLATES = {
     "operserv_akill_nick": "AKILL add {nick} {reason}",
-    "operserv_gline_ip": "GLINE add {ip} {duration} {reason}",
-    "operserv_zline_ip": "ZLINE add {ip} {duration} {reason}",
+    "operserv_gline_ip":   "GLINE add {ip} {duration} {reason}",
+    "operserv_zline_ip":   "ZLINE add {ip} {duration} {reason}",
     "operserv_block_nick": "BLOCK add {nick} {reason}",
-    "operserv_kill_nick": "KILL add {nick} {reason}",
-    "custom": AKILL_CUSTOM_COMMAND
+    "operserv_kill_nick":  "KILL add {nick} {reason}",
+    "custom":              AKILL_CUSTOM_COMMAND
 }
 
 # ----------------------------
 # Reconnection Settings
 # ----------------------------
-RECONNECT_DELAY = 60  # Delay (in seconds) before reconnecting after disconnection
+RECONNECT_DELAY = 60
 
 # ----------------------------
 # Logging Configuration
@@ -96,20 +90,22 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("ghostbot.log"),  # Logs to a file
-        logging.StreamHandler()               # Logs to the console
+        logging.FileHandler("ghostbot.log"),
+        logging.StreamHandler()
     ]
 )
 
 # ----------------------------
 # Reputation System Configuration
 # ----------------------------
-DB_FILE = "ghostbot_reputation.db"  # SQLite database file for storing reputation data
-REPUTATION_THRESHOLD = 5           # Users with reputation >= this threshold are trusted
+DB_FILE = "ghostbot_reputation.db"
+REPUTATION_THRESHOLD = 5
 
-# ============================
-# Reputation System Functions
-# ============================
+def normalize_unicode_text(text):
+    normalized = unicodedata.normalize('NFKC', text)
+    zero_width_pattern = re.compile(r'[\u200B\u200C\u200D\uFEFF]+')
+    cleaned = zero_width_pattern.sub('', normalized)
+    return cleaned
 
 def init_db():
     conn = sqlite3.connect(DB_FILE)
@@ -122,7 +118,6 @@ def init_db():
     """)
     conn.commit()
     conn.close()
-
 
 def get_reputation(nick):
     conn = sqlite3.connect(DB_FILE)
@@ -138,11 +133,9 @@ def get_reputation(nick):
         conn.close()
         return row[0]
 
-
 def increment_reputation(nick, amount=1):
     current_score = get_reputation(nick)
     new_score = current_score + amount
-
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     cursor.execute("UPDATE user_reputation SET score = ? WHERE nick = ?", (new_score, nick))
@@ -150,14 +143,8 @@ def increment_reputation(nick, amount=1):
     conn.close()
     return new_score
 
-
 def is_trusted(nick):
     return get_reputation(nick) >= REPUTATION_THRESHOLD
-
-
-# ============================
-# GhostBot Class Definition
-# ============================
 
 class GhostBot(irc.bot.SingleServerIRCBot):
     def __init__(self, channels, nickname, service_nick, server, port=6697):
@@ -182,41 +169,33 @@ class GhostBot(irc.bot.SingleServerIRCBot):
 
     def on_nicknameinuse(self, c, e):
         new_nick = c.get_nickname() + "_"
-        logging.warning(f"Nickname '{c.get_nickname()}' is in use. Trying new nickname: {new_nick}")
         c.nick(new_nick)
 
     def on_welcome(self, c, e):
-        logging.info(f"Connected to {IRC_SERVER}.")
         if IRC_OPER_USERNAME and IRC_OPER_PASSWORD:
-            logging.info(f"Performing IRC oper command: /oper {IRC_OPER_USERNAME} [password hidden]")
             c.oper(IRC_OPER_USERNAME, IRC_OPER_PASSWORD)
         for channel in self.channel_list:
             c.join(channel)
-            logging.info(f"Joined channel: {channel}")
         self.authenticate_nickserv(c)
 
     def authenticate_nickserv(self, connection):
         if not self.authenticated_nickserv and NICKSERV_PASSWORD:
             auth_command = NICKSERV_AUTH_COMMAND_TEMPLATE.format(password=NICKSERV_PASSWORD)
-            logging.info("Authenticating with NickServ...")
             connection.privmsg(NICKSERV_NICK, auth_command)
             self.authenticated_nickserv = True
-        elif not NICKSERV_PASSWORD:
-            logging.error("NickServ password not set. NickServ authentication will be skipped.")
 
     def on_pubmsg(self, c, e):
         message = e.arguments[0]
         source_channel = e.target
         sender = irc.client.NickMask(e.source).nick
-        logging.info(f"Public message received in {source_channel} from {sender}: {message}")
 
         if message.startswith('!'):
             self.handle_command(message, sender, source_channel)
 
-        normalized_message = unicodedata.normalize('NFKC', message)
+        clean_message = normalize_unicode_text(message)
+
         for pattern in self.spam_patterns:
-            if pattern.search(normalized_message):
-                logging.info(f"Spam detected in {source_channel} from {sender}: {message}")
+            if pattern.search(clean_message):
                 self.handle_spam(c, e, channel=source_channel)
                 return
 
@@ -225,12 +204,11 @@ class GhostBot(irc.bot.SingleServerIRCBot):
     def on_privmsg(self, c, e):
         message = e.arguments[0]
         sender = irc.client.NickMask(e.source).nick
-        logging.info(f"Private message received from {sender}: {message}")
 
-        normalized_message = unicodedata.normalize('NFKC', message)
+        clean_message = normalize_unicode_text(message)
+
         for pattern in self.spam_patterns:
-            if pattern.search(normalized_message):
-                logging.info(f"Spam detected in private message from {sender}: {message}")
+            if pattern.search(clean_message):
                 self.handle_spam(c, e, private=True)
                 return
 
@@ -307,19 +285,15 @@ class GhostBot(irc.bot.SingleServerIRCBot):
         user = irc.client.NickMask(event.source).nick
 
         if user in self.whitelist:
-            logging.info(f"Skipping spam check for whitelisted user: {user}")
             return
 
         if is_trusted(user):
-            logging.info(f"Trusted user '{user}' triggered spam but is above threshold. Skipping removal.")
             return
 
-        # If BAN_KICK_ENABLED is True, ban and kick the user from the channel
         if BAN_KICK_ENABLED and channel and not private:
             self.channel_ban(connection, event, channel)
         else:
-            logging.info(f"BAN_KICK_ENABLED is {BAN_KICK_ENABLED} or no channel. "
-                         f"No ban/kick action taken for {user}.")
+            pass
 
         reason = "Spamming detected: Use of prohibited keywords."
         duration = "0"
@@ -333,7 +307,6 @@ class GhostBot(irc.bot.SingleServerIRCBot):
         })
 
         if not any([AKILL_ENABLED, KILL_ENABLED, GLINE_ENABLED, KLINE_ENABLED, ZLINE_ENABLED]):
-            logging.info("Akill, Kill, Gline, Kline, and Zline are all disabled. No action taken.")
             return
 
         try:
@@ -355,30 +328,24 @@ class GhostBot(irc.bot.SingleServerIRCBot):
                             reason=reason
                         )
                 else:
-                    logging.error(f"Unsupported AKILL_TYPE: {AKILL_TYPE}. Akill action aborted.")
                     return
 
-                logging.info(f"Sending akill command: {akill_command}")
                 connection.privmsg("Operserv", akill_command)
 
             if KILL_ENABLED:
                 kill_command = f"KILL {user} {reason}"
-                logging.info(f"Sending kill command: {kill_command}")
                 connection.send_raw(kill_command)
 
             if GLINE_ENABLED:
                 gline_command = f"GLINE {user} {duration} {reason}"
-                logging.info(f"Sending gline command: {gline_command}")
                 connection.send_raw(gline_command)
 
             if KLINE_ENABLED:
                 kline_command = f"KLINE {user} {duration} {reason}"
-                logging.info(f"Sending kline command: {kline_command}")
                 connection.send_raw(kline_command)
 
             if ZLINE_ENABLED:
                 zline_command = f"ZLINE {user} {duration} {reason}"
-                logging.info(f"Sending zline command: {zline_command}")
                 connection.send_raw(zline_command)
 
             removal_msg = f"\x034{user}\x03 has been \x02removed\x02 for spamming."
@@ -389,8 +356,7 @@ class GhostBot(irc.bot.SingleServerIRCBot):
                     connection.privmsg(ch, removal_msg)
 
         except Exception as ex:
-            logging.error(f"Failed to handle spam for user {user}: {ex}")
-            logging.error(traceback.format_exc())
+            pass
 
     def extract_ip(self, hostmask):
         ipv4_pattern = re.compile(r'(\d{1,3}\.){3}\d{1,3}')
@@ -398,61 +364,44 @@ class GhostBot(irc.bot.SingleServerIRCBot):
         if match:
             return match.group()
         else:
-            logging.warning(f"Could not extract IP from hostmask: {hostmask}. Using hostmask instead.")
             return hostmask
 
     def channel_ban(self, connection, event, channel):
-        """
-        Ban and (optionally) kick the user from the specified channel.
-        Uses the real host from the user's hostmask rather than the nick.
-        """
         nickmask = irc.client.NickMask(event.source)
         nick = nickmask.nick
         user = nickmask.user
         host = nickmask.host
 
-        # Create a standard banmask: *!user@host
         banmask = f"*!{user}@{host}"
 
-        # Use two-argument form: channel + combined string
         connection.mode(channel, f"+b {banmask}")
-        logging.info(f"Banned user {nick} from channel {channel}. Banmask: {banmask}")
 
         if BAN_KICK_ENABLED:
             connection.kick(channel, nick, "Banned for misconduct.")
-            logging.info(f"Kicked user {nick} from channel {channel}.")
         else:
-            logging.info(f"Banning is enabled but kicking is disabled. User {nick} remains in channel {channel}.")
+            pass
 
     def on_disconnect(self, c, e):
-        logging.warning(f"Disconnected from server. Reconnecting in {RECONNECT_DELAY} seconds...")
         time.sleep(RECONNECT_DELAY)
         self.reconnect()
 
     def reconnect(self):
         try:
-            logging.info("Attempting to reconnect...")
             self.connect(IRC_SERVER, IRC_PORT, BOT_NICKNAME)
             self.start()
         except Exception as ex:
-            logging.error(f"Reconnection failed: {ex}. Retrying in {RECONNECT_DELAY} seconds...")
-            logging.error(traceback.format_exc())
             time.sleep(RECONNECT_DELAY)
             self.reconnect()
-
 
 def main():
     try:
         init_db()
         bot = GhostBot(CHANNELS, BOT_NICKNAME, SERVICE_NICKNAME, IRC_SERVER, IRC_PORT)
-        logging.info("Starting GhostBot...")
         bot.start()
     except KeyboardInterrupt:
-        logging.info("Bot shutting down gracefully.")
+        pass
     except Exception as ex:
-        logging.error(f"An error occurred: {ex}")
-        logging.error(traceback.format_exc())
-
+        pass
 
 if __name__ == "__main__":
-    main()
+        main()
