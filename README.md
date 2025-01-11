@@ -1,10 +1,12 @@
 
 # IRC SpamStopper
 
+<img src="https://raw.githubusercontent.com/gh0st68/SpamStopper/refs/heads/main/spamblockerbot.webp" alt="Spam Stopper Logo" width="300"/>
+
 **For support and help, or just to visit, come to** [irc.twistednet.org](irc://irc.twistednet.org) **channels #dev and #twisted**  
 **SpamBot made by gh0st**  
 
-![GhostBot Logo](https://raw.githubusercontent.com/gh0st68/web/main/TwistedNETLogo3.png)
+<img src="https://raw.githubusercontent.com/gh0st68/web/main/TwistedNETLogo3.png" alt="TwistedNet Logo" width="300"/>
 
 ## Overview
 
